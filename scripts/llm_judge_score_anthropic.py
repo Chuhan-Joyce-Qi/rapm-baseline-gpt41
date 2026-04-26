@@ -291,18 +291,29 @@ def read_done_indices(jsonl_path):
 
 
 # === ANTHROPIC API CALL (replaces OpenAI version) ===
-async def call_judge(client, model, system_prompt, user_prompt, max_tokens, temperature):
-    resp = await client.messages.create(
+async def call_judge(client, model, system_prompt, user_prompt, max_tokens, temperature, thinking_budget=4000):
+    # Extended thinking forces temperature=1.0 per Anthropic API contract.
+    kwargs = dict(
         model=model,
         max_tokens=max_tokens,
-        temperature=temperature,
-        system=system_prompt,                            # Anthropic: system as separate kwarg
+        temperature=1.0,
+        system=system_prompt,
         messages=[{"role": "user", "content": user_prompt}],
     )
-    text = resp.content[0].text if resp.content else ""
+    if thinking_budget and thinking_budget > 0:
+        kwargs["thinking"] = {"type": "enabled", "budget_tokens": thinking_budget}
+    resp = await client.messages.create(**kwargs)
+    # Response content now contains a mix of thinking_block + text_block items.
+    # We only want the visible text. Iterate and pick the text block.
+    text = ""
+    for block in (resp.content or []):
+        btype = getattr(block, "type", None)
+        if btype == "text":
+            text = block.text
+            break
     usage = resp.usage
     return text, {
-        "prompt_tokens": getattr(usage, "input_tokens", 0),       # Anthropic naming
+        "prompt_tokens": getattr(usage, "input_tokens", 0),
         "completion_tokens": getattr(usage, "output_tokens", 0),
     }
 
@@ -318,7 +329,8 @@ async def score_sample(client, semaphore, model, sample, max_tokens, temperature
             for retry in range(max_retries):
                 try:
                     text, tokens = await call_judge(
-                        client, model, SYSTEM_PROMPT, user_prompt, max_tokens, temperature
+                        client, model, SYSTEM_PROMPT, user_prompt, max_tokens, temperature,
+                        thinking_budget=getattr(score_sample, "_thinking_budget", 4000),
                     )
                     raw_text = text
                     cumulative_tokens["prompt_tokens"] += tokens["prompt_tokens"]
@@ -486,6 +498,7 @@ async def main_async(args):
             print("ERROR: ANTHROPIC_API_KEY is not set", file=sys.stderr)
             sys.exit(2)
         client = AsyncAnthropic(api_key=api_key)
+        score_sample._thinking_budget = args.thinking_budget  # type: ignore
 
     datasets = args.datasets.split(",") if args.datasets else DEFAULT_DATASETS
     datasets = [d.strip() for d in datasets if d.strip()]
@@ -550,7 +563,8 @@ def build_argparser():
     p.add_argument("--output_price", type=float, default=15.00,
                    help="USD per 1M output tokens (Sonnet 4.6 = 15.00)")
     p.add_argument("--temperature", type=float, default=0.0)
-    p.add_argument("--max_tokens", type=int, default=1024)
+    p.add_argument("--max_tokens", type=int, default=5120)
+    p.add_argument("--thinking_budget", type=int, default=4000, help="Extended-thinking budget in tokens (0 to disable)")
     return p
 
 

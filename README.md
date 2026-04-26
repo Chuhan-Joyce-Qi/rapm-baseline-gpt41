@@ -5,12 +5,11 @@ Wu et al. 2025 (arXiv:2505.20354), evaluated on the Prot-Inst-OOD dataset.
 
 ## Setup
 - **Inference LLM**: GPT-4.1 (`gpt-4.1-2025-04-14`)
-- **Judge LLM**: Claude Sonnet 4.6 (`claude-sonnet-4-6`)
+- **Judge LLM**: Claude Sonnet 4.6 (`claude-sonnet-4-6`), with and without extended thinking
 - **Retrieval**: ESM-2 (1280-dim) + MMseqs2, hybrid α=0.5, top-K=10
-- **Test set**: Full Prot-Inst-OOD (14,503 samples across 4 tasks) for lexical metrics; 500 samples/task subset for LLM-as-Judge
+- **Test set**: Full Prot-Inst-OOD (14,503 samples) for lexical metrics; 500/task subset for LLM-as-Judge
 - **Hardware**: MIT ORCD Engaging cluster, NVIDIA L40S (embedding stage only)
-- **Inference cost**: $67.19 (full test set, GPT-4.1)
-- **Judge cost**: $18.86 (2,000 samples, Claude Sonnet 4.6)
+- **Total API cost**: ~$129 (GPT-4.1 inference $67, judge no-thinking $19, judge extended-thinking $43)
 
 ## Tasks
 | Task | Test samples |
@@ -43,6 +42,8 @@ Wu et al. 2025 (arXiv:2505.20354), evaluated on the Prot-Inst-OOD dataset.
 
 ### LLM-as-Judge — Claude Sonnet 4.6, 500 samples/task, 0–10 scale
 
+#### Without extended thinking (initial run)
+
 | Task | Recall | Precision | Specificity | Plausibility | Final | n_scored |
 |---|---|---|---|---|---|---|
 | catalytic_activity_OOD | 3.87 | 5.31 | 9.54 | 5.98 | **6.28** | 497 |
@@ -51,12 +52,24 @@ Wu et al. 2025 (arXiv:2505.20354), evaluated on the Prot-Inst-OOD dataset.
 | protein_function_OOD | 5.60 | 5.81 | 8.15 | 6.44 | **6.66** | 500 |
 | **Macro mean** | **4.51** | **5.63** | **8.33** | **6.26** | **6.32** | 1,978 |
 
+#### With extended thinking (`thinking={"type":"enabled","budget_tokens":4000}`, `max_tokens=5120`)
+
+| Task | Recall | Precision | Specificity | Plausibility | Final | n_scored |
+|---|---|---|---|---|---|---|
+| catalytic_activity_OOD | 3.54 | 5.43 | 9.56 | 5.12 | **6.16** | 498 |
+| domain_motif_OOD | 3.94 | 5.63 | 9.34 | 6.29 | **6.49** | 498 |
+| general_function_OOD | 3.32 | 4.14 | 7.48 | 4.87 | **5.11** | 495 |
+| protein_function_OOD | 5.33 | 4.97 | 8.57 | 5.79 | **6.32** | 500 |
+| **Macro mean** | **4.03** | **5.04** | **8.74** | **5.52** | **6.02** | 1,991 |
+
+The extended-thinking judge gives stricter scores on most axes (recall, precision, plausibility ↓), with slight gains on specificity (↑). The macro mean of contradictions found per sample rose from ~0.48 → ~0.60, suggesting the thinking-enabled judge catches more nuanced contradictions. Parse failure rate dropped from 1.1% → 0.45%.
+
 ## Pipeline
 
-1. **Stage 1 — Retrieval-augmented prompt construction** (RAPM repo): ESM-2 embeddings, hybrid FAISS HNSW + MMseqs2 retrieval, build prompts with combined-task retrieval pool and task-specific few-shot examples.
+1. **Stage 1 — RAG prompt construction** (RAPM repo): ESM-2 embeddings, hybrid FAISS HNSW + MMseqs2 retrieval, build prompts. Retrieval pool combines all 4 task training sets; few-shot examples are task-specific.
 2. **Stage 2 — GPT-4.1 inference** (`scripts/gpt41_inference.py`): async parallelism (50 concurrent), exponential backoff, resumable checkpointing.
-3. **Stage 3 — Lexical metric scoring** (saper-clip-benchmarks): `rapm_rescore.py` and `fix_entity_bleu.py`.
-4. **Stage 4 — LLM-as-Judge scoring** (`scripts/llm_judge_score_anthropic.py`): Claude Sonnet 4.6 scoring on 4 axes (recall, precision, specificity, plausibility) with rubric from saper-clip-benchmarks.
+3. **Stage 3 — Lexical scoring** (saper-clip-benchmarks): `rapm_rescore.py` and `fix_entity_bleu.py`.
+4. **Stage 4 — LLM-as-Judge** (`scripts/llm_judge_score_anthropic.py`): Claude Sonnet 4.6 scoring on 4 axes (recall, precision, specificity, plausibility) with rubric from saper-clip-benchmarks. Run with and without extended thinking.
 
 ## How to reproduce
 
@@ -64,26 +77,32 @@ Wu et al. 2025 (arXiv:2505.20354), evaluated on the Prot-Inst-OOD dataset.
 # Stage 2: inference (after Stage 1 prompts are built)
 python scripts/gpt41_inference.py --task all --concurrency 50
 
-# Stage 3: lexical metrics (requires saper-clip-benchmarks repo)
+# Stage 3: lexical metrics
 python rapm_rescore.py --results_dir results/predictions --dataset_dir <DATASET>
 python fix_entity_bleu.py --results_dir results/predictions --dataset_dir <DATASET>
 
-# Stage 4: LLM-as-Judge with Claude Sonnet 4.6
+# Stage 4a: judge without thinking
 export ANTHROPIC_API_KEY="sk-ant-..."
 python scripts/llm_judge_score_anthropic.py \
-  --predictions_dir results/predictions \
-  --dataset_dir <DATASET> \
-  --num_samples 500 \
-  --max_concurrent 5
+  --predictions_dir results/predictions --dataset_dir <DATASET> \
+  --num_samples 500 --max_concurrent 5 \
+  --max_tokens 1024 --thinking_budget 0 \
+  --output_dir results/judge_scores
+
+# Stage 4b: judge with extended thinking
+python scripts/llm_judge_score_anthropic.py \
+  --predictions_dir results/predictions --dataset_dir <DATASET> \
+  --num_samples 500 --max_concurrent 5 \
+  --max_tokens 5120 --thinking_budget 4000 \
+  --output_dir results/judge_scores_extended_thinking
 ```
 
 ## Notes
-- Retrieval uses a **combined training pool across all 4 tasks** (~204k proteins), but few-shot examples are task-specific.
-- Llama-3.2-1B tokenizer used for Meta-BLEU (matches RAPM paper methodology).
-- Judge script adapted from `saper-clip-benchmarks/llm_judge_score.py` to use Anthropic API; rubric and prompt unchanged.
-- ~1.5% of judge samples failed to parse; these are excluded from per-axis means.
+- Retrieval uses combined training pool across all 4 tasks (~204k proteins); few-shot examples are task-specific.
+- Judge script adapted from `saper-clip-benchmarks/llm_judge_score.py` for Anthropic API; rubric and prompt unchanged.
+- Extended thinking forces `temperature=1.0` per Anthropic API contract; `max_tokens=5120` accommodates 4000-token thinking budget plus final answer.
 
 ## References
 - RAPM: Wu et al. 2025, arXiv:2505.20354
 - Dataset: TimeRune/Prot-Inst-OOD (HuggingFace)
-- Benchmarks repo: github.com/ywliang1/saper-clip-benchmarks
+- Benchmarks: github.com/ywliang1/saper-clip-benchmarks

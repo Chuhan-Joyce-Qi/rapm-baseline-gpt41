@@ -1,0 +1,31 @@
+{
+  "n_scored": 500,
+  "cost_usd": 11.20539,
+  "mean_recall": 5.328,
+  "mean_precision": 4.97,
+  "mean_specificity": 8.574,
+  "mean_plausibility": 5.794,
+  "mean_final_score": 6.32,
+  "std_final_score": 2.1674,
+  "match_type_histogram": {
+    "1": 1250,
+    "2": 186,
+    "3": 178,
+    "4": 5
+  },
+  "n_ref_stats": {
+    "mean": 6.312,
+    "median": 5.0
+  },
+  "n_matched_stats": {
+    "mean": 3.238,
+    "median": 3.0
+  },
+  "n_contradicted_stats": {
+    "mean": 0.59,
+    "median": 0.0
+  },
+  "n_failed": 0,
+  "dataset": "protein_function_OOD",
+  "judge_model": "claude-sonnet-4-6"
+}

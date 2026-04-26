@@ -1,0 +1,31 @@
+{
+  "n_scored": 498,
+  "cost_usd": 9.547917,
+  "mean_recall": 3.9438,
+  "mean_precision": 5.6345,
+  "mean_specificity": 9.3353,
+  "mean_plausibility": 6.2912,
+  "mean_final_score": 6.49,
+  "std_final_score": 1.8533,
+  "match_type_histogram": {
+    "1": 266,
+    "2": 40,
+    "3": 67,
+    "4": 0
+  },
+  "n_ref_stats": {
+    "mean": 1.7791,
+    "median": 1.0
+  },
+  "n_matched_stats": {
+    "mean": 0.749,
+    "median": 0.0
+  },
+  "n_contradicted_stats": {
+    "mean": 0.2309,
+    "median": 0.0
+  },
+  "n_failed": 2,
+  "dataset": "domain_motif_OOD",
+  "judge_model": "claude-sonnet-4-6"
+}
