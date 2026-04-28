@@ -1,0 +1,10 @@
+Scores are on 0-100 scale to match RAPM paper convention.
+
+catalytic_activity_OOD: Entity-BLEU-2: 10.32%  Entity-BLEU-4: 1.91%  Entity-Precision: 31.56%  Entity-Recall: 37.09%  Entity-F1: 32.13%
+domain_motif_OOD: Entity-BLEU-2: 0.81%  Entity-BLEU-4: 0.05%  Entity-Precision: 7.35%  Entity-Recall: 13.53%  Entity-F1: 8.95%
+general_function_OOD: Entity-BLEU-2: 0.07%  Entity-BLEU-4: 0.01%  Entity-Precision: 1.79%  Entity-Recall: 1.60%  Entity-F1: 1.61%
+protein_function_OOD: Entity-BLEU-2: 0.91%  Entity-BLEU-4: 0.04%  Entity-Precision: 9.26%  Entity-Recall: 17.08%  Entity-F1: 11.09%
+
+Average:      Entity-BLEU-2: 3.03%  Entity-BLEU-4: 0.50%  Entity-Precision: 12.49%  Entity-Recall: 17.33%  Entity-F1: 13.45%
+
+Saved to /home/liangyw/work/results/gpt41_v2/predictions/entity_bleu_metrics.json

@@ -58,6 +58,27 @@ Same RAPM original prompt, same retrieval, same full test set. Only difference: 
 | M-METEOR | 35.42 | 41.76 | +6.34 ⬆️ |
 | ROUGE-L | 34.16 | 32.75 | -1.41 |
 
+### GPT-4.1 v2 (paper-matched sampling: temperature=0.7, top_p=0.9, max_tokens=2048, few-shot=3)
+
+Same model, same retrieval, same prompt template — only sampling parameters change. Few-shot count reduced from 10 to 3 (deterministic random with seed=42 per sample) per coworker request.
+
+| Task | M-BLEU-2 | M-BLEU-4 | METEOR | M-METEOR | ROUGE-L |
+|---|---|---|---|---|---|
+| catalytic_activity_OOD | 31.29 | 25.81 | 46.77 | 40.43 | 41.26 |
+| domain_motif_OOD | 23.28 | 17.79 | 32.03 | 32.03 | 22.07 |
+| general_function_OOD | 8.87 | 5.88 | 29.47 | 27.85 | 25.99 |
+| protein_function_OOD | 33.02 | 24.50 | 40.94 | 42.23 | 25.99 |
+| **Macro mean** | **24.12** | **18.50** | **37.30** | **35.64** | **28.83** |
+
+### Sampling parameter effect (GPT-4.1 v1 vs v2)
+
+| Metric | v1 (T=0, fs=10) | v2 (T=0.7, fs=3) | Δ |
+|---|---|---|---|
+| M-BLEU-2 macro | 22.31 | 24.12 | +1.81 |
+| ROUGE-L macro | 34.16 | 28.83 | -5.33 |
+
+Higher temperature + fewer few-shot examples shifts predictions toward more paraphrasing (ROUGE-L drops) with marginally better biological-keyword overlap (M-BLEU-2 up). Net effect on overall quality is small.
+
 ## Headline Results — Entity-BLEU / Entity-F1
 
 ### GPT-4.1 baseline
@@ -81,6 +102,18 @@ Same RAPM original prompt, same retrieval, same full test set. Only difference: 
 | **Average** | **3.52** | **0.59** | **13.99** | **21.55** | **15.75** |
 
 Sonnet 4.6 improves Entity-F1 macro by **+2.11** and Entity-Recall by **+3.64** over GPT-4.1, with consistent gains across all four tasks.
+
+### GPT-4.1 v2 Entity-BLEU
+
+| Task | E-BLEU-2 | E-BLEU-4 | E-Precision | E-Recall | E-F1 |
+|---|---|---|---|---|---|
+| catalytic_activity_OOD | 10.32 | 1.91 | 31.56 | 37.09 | 32.13 |
+| domain_motif_OOD | 0.81 | 0.05 | 7.35 | 13.53 | 8.95 |
+| general_function_OOD | 0.07 | 0.01 | 1.79 | 1.60 | 1.61 |
+| protein_function_OOD | 0.91 | 0.04 | 9.26 | 17.08 | 11.09 |
+| **Average** | **3.03** | **0.50** | **12.49** | **17.33** | **13.45** |
+
+Sampling parameter changes had negligible Entity-F1 effect (-0.20 vs v1), confirming entity-level differences across runs are dominated by model choice rather than sampling settings.
 
 ## Headline Results — LLM-as-Judge (Sonnet 4.6 with extended thinking, 500 samples/task)
 
