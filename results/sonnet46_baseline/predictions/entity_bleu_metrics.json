@@ -1,0 +1,37 @@
+{
+  "catalytic_activity_OOD": {
+    "entity_bleu2": 10.89,
+    "entity_bleu4": 2.11,
+    "entity_precision": 31.21,
+    "entity_recall": 38.62,
+    "entity_f1": 32.92
+  },
+  "domain_motif_OOD": {
+    "entity_bleu2": 1.25,
+    "entity_bleu4": 0.07,
+    "entity_precision": 11.4,
+    "entity_recall": 18.88,
+    "entity_f1": 13.39
+  },
+  "general_function_OOD": {
+    "entity_bleu2": 0.71,
+    "entity_bleu4": 0.15,
+    "entity_precision": 3.99,
+    "entity_recall": 4.14,
+    "entity_f1": 3.93
+  },
+  "protein_function_OOD": {
+    "entity_bleu2": 1.23,
+    "entity_bleu4": 0.04,
+    "entity_precision": 9.36,
+    "entity_recall": 24.58,
+    "entity_f1": 12.77
+  },
+  "average": {
+    "entity_bleu2": 3.52,
+    "entity_bleu4": 0.59,
+    "entity_precision": 13.99,
+    "entity_recall": 21.55,
+    "entity_f1": 15.75
+  }
+}

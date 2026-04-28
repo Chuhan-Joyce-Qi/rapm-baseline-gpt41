@@ -1,0 +1,143 @@
+{
+  "judge_model": "claude-sonnet-4-6",
+  "datasets": [
+    "catalytic_activity_OOD",
+    "domain_motif_OOD",
+    "general_function_OOD",
+    "protein_function_OOD"
+  ],
+  "macro_mean_recall": 4.5748,
+  "macro_mean_precision": 4.8605,
+  "macro_mean_specificity": 9.0011,
+  "macro_mean_plausibility": 5.7917,
+  "macro_mean_final_score": 6.2133,
+  "total_cost_usd": 44.4272,
+  "total_scored": 1995,
+  "total_failed": 5,
+  "per_dataset": {
+    "catalytic_activity_OOD": {
+      "n_scored": 500,
+      "cost_usd": 10.276755,
+      "mean_recall": 3.4128,
+      "mean_precision": 5.33,
+      "mean_specificity": 9.552,
+      "mean_plausibility": 5.062,
+      "mean_final_score": 6.07,
+      "std_final_score": 2.5778,
+      "match_type_histogram": {
+        "1": 38,
+        "2": 6,
+        "3": 15,
+        "4": 112
+      },
+      "n_ref_stats": {
+        "mean": 1.002,
+        "median": 1.0
+      },
+      "n_matched_stats": {
+        "mean": 0.342,
+        "median": 0.0
+      },
+      "n_contradicted_stats": {
+        "mean": 0.778,
+        "median": 1.0
+      },
+      "n_failed": 0,
+      "dataset": "catalytic_activity_OOD",
+      "judge_model": "claude-sonnet-4-6"
+    },
+    "domain_motif_OOD": {
+      "n_scored": 499,
+      "cost_usd": 9.589296,
+      "mean_recall": 4.8036,
+      "mean_precision": 5.521,
+      "mean_specificity": 9.489,
+      "mean_plausibility": 6.8918,
+      "mean_final_score": 6.8096,
+      "std_final_score": 1.8354,
+      "match_type_histogram": {
+        "1": 393,
+        "2": 42,
+        "3": 49,
+        "4": 0
+      },
+      "n_ref_stats": {
+        "mean": 1.7756,
+        "median": 1
+      },
+      "n_matched_stats": {
+        "mean": 0.9699,
+        "median": 1
+      },
+      "n_contradicted_stats": {
+        "mean": 0.1924,
+        "median": 0
+      },
+      "n_failed": 1,
+      "dataset": "domain_motif_OOD",
+      "judge_model": "claude-sonnet-4-6"
+    },
+    "general_function_OOD": {
+      "n_scored": 496,
+      "cost_usd": 12.764502,
+      "mean_recall": 4.1008,
+      "mean_precision": 3.8528,
+      "mean_specificity": 8.1714,
+      "mean_plausibility": 5.123,
+      "mean_final_score": 5.4395,
+      "std_final_score": 2.1591,
+      "match_type_histogram": {
+        "1": 345,
+        "2": 68,
+        "3": 114,
+        "4": 7
+      },
+      "n_ref_stats": {
+        "mean": 3.1169,
+        "median": 2.0
+      },
+      "n_matched_stats": {
+        "mean": 1.0746,
+        "median": 1.0
+      },
+      "n_contradicted_stats": {
+        "mean": 0.7944,
+        "median": 0.0
+      },
+      "n_failed": 4,
+      "dataset": "general_function_OOD",
+      "judge_model": "claude-sonnet-4-6"
+    },
+    "protein_function_OOD": {
+      "n_scored": 500,
+      "cost_usd": 11.796642,
+      "mean_recall": 5.982,
+      "mean_precision": 4.738,
+      "mean_specificity": 8.792,
+      "mean_plausibility": 6.09,
+      "mean_final_score": 6.534,
+      "std_final_score": 2.0022,
+      "match_type_histogram": {
+        "1": 1558,
+        "2": 118,
+        "3": 162,
+        "4": 6
+      },
+      "n_ref_stats": {
+        "mean": 6.3,
+        "median": 5.0
+      },
+      "n_matched_stats": {
+        "mean": 3.688,
+        "median": 3.0
+      },
+      "n_contradicted_stats": {
+        "mean": 0.5,
+        "median": 0.0
+      },
+      "n_failed": 0,
+      "dataset": "protein_function_OOD",
+      "judge_model": "claude-sonnet-4-6"
+    }
+  }
+}
